@@ -1,17 +1,23 @@
+from datetime import datetime
+
 def cadastra_cliente(clientes):
     razao_social = input("Digite a razao social: ")
     CNPJ = input("Digite o CNPJ: ")
     tipo_conta = input("Digite o tipo de conta: ")
     saldo_inicial = float(input("Digite o saldo inicial: "))
     senha = input("Digite uma senha: ")
+    transacoes = []
 
     cliente = {
         "razao_social": razao_social,
         "cnpj": CNPJ,
         "tipo_conta": tipo_conta,
         "saldo": saldo_inicial,
-        "senha": senha
+        "senha": senha,
+        "extrato": transacoes
     }
+
+    registra_transacao(cliente, 2, saldo_inicial)
 
     clientes.append(cliente)
 
@@ -31,10 +37,10 @@ def deleta_cliente(clientes):
         
 def lista_clientes(clientes):
     for cliente in clientes:
-        for chave, valor in cliente.items():
-            print(f"{chave}: {valor}")
+        print(f"nome: {cliente['razao_social']}")
+        print(f"CNPJ: {cliente['cnpj']}")
+        print(f"saldo: R$ {(cliente['saldo']):.2f}\n")
         
-        print()
 
 def debita_valor(clientes):
     CNPJ = input("Digite o CNPJ da conta que tera o valor debitado: ")
@@ -56,6 +62,8 @@ def debita_valor(clientes):
                 valor_debitado = valor * 1.03
             
             cliente['saldo'] -= valor_debitado
+            registra_transacao(cliente, 1, valor_debitado)
+
             print("\nTransacao concluida com sucesso!")
         else:
             print("\nSenha incorreta!")
@@ -70,16 +78,35 @@ def deposita_valor(clientes):
         cliente = clientes[indice_cliente]    
 
         valor = float(input("Valor a ser depositado: "))  
-
         cliente['saldo'] += valor
+        registra_transacao(cliente, 2, valor)
+
         print("\nTransacao concluida com sucesso!")       
 
-def gera_extrato():
+def gera_extrato(clientes):
     CNPJ = input("Digite o CNPJ da conta: ")
-    senha = input("Digite a senha: ")
 
-    print(f"CNPJ: {CNPJ}")
-    print(f"senha: {senha}")
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
+
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado")
+    else:
+        cliente = clientes[indice_cliente]    
+
+        senha = input("Digite a senha: ")  
+
+        if cliente['senha'] == senha:
+            print()
+            print(f"nome: {cliente['razao_social']}")
+            print(f"CNPJ: {cliente['cnpj']}")
+            print(f"tipo de conta: {cliente['tipo_conta']}")
+            print()
+            
+            for transacao in cliente["extrato"]:
+                print(f"{transacao['data']}\tvalor: R$ {(transacao['valor']):.2f}\ttarifa: {(transacao['tarifa']):.2f}\tsaldo: R$ {(transacao['saldo_atual']):.2f}")
+        else:
+            print("\nSenha incorreta!")
+    
 
 def transfere_valor(clientes):
     CNPJ_origem = input("Digite o CNPJ da conta de origem: ")
@@ -103,7 +130,10 @@ def transfere_valor(clientes):
                 valor = float(input("Valor a ser transferido: "))
             
                 cliente_origem['saldo'] -= valor
+                registra_transacao(cliente_origem, 3, valor)
+
                 cliente_destino['saldo'] += valor
+                registra_transacao(cliente_destino, 4, valor)
 
                 print("\nTransacao concluida com sucesso!")
         else:
@@ -116,6 +146,35 @@ def retorna_indice_cliente(clientes, cnpj):
         
     return -1
 
+def registra_transacao(cliente, tipo_op, valor):
+    data_transacao = datetime.now()
+    tipo_transacao = ""
+    tarifa = 0
+
+    if tipo_op == 1:
+        tipo_transacao = "debito"
+        valor = valor * (-1)
+        if cliente["tipo_conta"] == "comum":
+            tarifa = 0.05
+        else:
+            tarifa = 0.03
+    elif tipo_op == 2:
+        tipo_transacao = "deposito"
+    elif tipo_op == 3:
+        tipo_transacao = "transferencia enviada"
+        valor = valor * (-1)
+    else:
+        tipo_transacao = "transferencia recebida"
+
+    operacao = {
+        "data": data_transacao,
+        "tipo": tipo_transacao,
+        "valor": valor,
+        "tarifa": tarifa,
+        "saldo_atual": cliente["saldo"]
+    }
+
+    cliente["extrato"].append(operacao)
 
 clientes = []
 
@@ -136,7 +195,7 @@ while (True):
     elif (inputUsuario == 5):
         deposita_valor(clientes)
     elif (inputUsuario == 6):
-        gera_extrato()
+        gera_extrato(clientes)
     elif (inputUsuario == 7):
         transfere_valor(clientes)
     elif (inputUsuario == 8):
