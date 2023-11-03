@@ -51,18 +51,24 @@ def debita_valor(clientes):
         print("\nCNPJ nao encontrado")
     else:
         senha = input("Digite a senha:")
-        cliente = clientes[indice_cliente]        
+        cliente = clientes[indice_cliente]
+        limite = 0        
         
         if cliente['senha'] == senha:
             valor = float(input("Valor a ser debitado: "))
 
             if cliente['tipo_conta'] == "comum":
                 valor_debitado = valor * 1.05
+                limite = -1000
             else:
                 valor_debitado = valor * 1.03
+                limite = -5000
             
-            cliente['saldo'] -= valor_debitado
-            registra_transacao(cliente, 1, valor_debitado)
+            if cliente['saldo'] - valor_debitado >= limite:
+                cliente['saldo'] -= valor_debitado
+                registra_transacao(cliente, 1, valor_debitado)
+            else:
+                print("\nSaldo insuficiente!")
 
             print("\nTransacao concluida com sucesso!")
         else:
@@ -101,7 +107,7 @@ def gera_extrato(clientes):
             print(f"CNPJ: {cliente['cnpj']}")
             print(f"tipo de conta: {cliente['tipo_conta']}")
             print()
-            
+
             for transacao in cliente["extrato"]:
                 print(f"{transacao['data']}\tvalor: R$ {(transacao['valor']):.2f}\ttarifa: {(transacao['tarifa']):.2f}\tsaldo: R$ {(transacao['saldo_atual']):.2f}")
         else:
@@ -111,6 +117,12 @@ def gera_extrato(clientes):
 def transfere_valor(clientes):
     CNPJ_origem = input("Digite o CNPJ da conta de origem: ")
     indice_cliente_origem = retorna_indice_cliente(clientes, CNPJ_origem)
+    limite = 0
+
+    if cliente_origem['tipo_conta'] == "comum":
+        limite == -1000
+    else:
+        limite == -5000
 
     if indice_cliente_origem == -1:
         print("\nCNPJ nao encontrado!")
@@ -129,13 +141,16 @@ def transfere_valor(clientes):
                 cliente_destino = clientes[indice_cliente_destino]
                 valor = float(input("Valor a ser transferido: "))
             
-                cliente_origem['saldo'] -= valor
-                registra_transacao(cliente_origem, 3, valor)
+                if cliente_origem['saldo'] - valor >= limite:
+                    cliente_origem['saldo'] -= valor
+                    registra_transacao(cliente_origem, 3, valor)
 
-                cliente_destino['saldo'] += valor
-                registra_transacao(cliente_destino, 4, valor)
+                    cliente_destino['saldo'] += valor
+                    registra_transacao(cliente_destino, 4, valor)
 
-                print("\nTransacao concluida com sucesso!")
+                    print("\nTransacao concluida com sucesso!")
+                else:
+                    print("\nSaldo insuficiente!")
         else:
             print("\nSenha incorreta!")
 
