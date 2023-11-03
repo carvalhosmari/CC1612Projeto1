@@ -16,35 +16,63 @@ def cadastra_cliente(clientes):
     clientes.append(cliente)
 
 def deleta_cliente(clientes):
-    cnpj_cliente = input("Digite o CNPJ do cliente que sera deletado: ")
+    CNPJ = input("Digite o CNPJ do cliente que sera deletado: ")
 
-    for cliente in clientes:
-        if cliente['cnpj'] == cnpj_cliente:
-            clientes.remove(cliente)
-            print("cliente deletado com sucesso!")
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
+
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado!")
+    else:
+        cliente = clientes[indice_cliente]
+
+        clientes.remove(cliente)            
+        
+        print("\nCliente deletado com sucesso!")
         
 def lista_clientes(clientes):
-    print("dentro da funcao listar clientes:")
     for cliente in clientes:
-        print()
         for chave, valor in cliente.items():
             print(f"{chave}: {valor}")
+        
+        print()
 
-def debita_valor():
+def debita_valor(clientes):
     CNPJ = input("Digite o CNPJ da conta que tera o valor debitado: ")
-    senha = input("Digite a senha: ")
-    valor = float(input("Digite o valor: "))
+    
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
 
-    print(f"CNPJ: {CNPJ}")
-    print(f"senha: {senha}")
-    print(f"valor: {valor}")
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado")
+    else:
+        senha = input("Digite a senha:")
+        cliente = clientes[indice_cliente]        
+        
+        if cliente['senha'] == senha:
+            valor = float(input("Valor a ser debitado: "))
 
-def deposita_valor():
+            if cliente['tipo_conta'] == "comum":
+                valor_debitado = valor * 1.05
+            else:
+                valor_debitado = valor * 1.03
+            
+            cliente['saldo'] -= valor_debitado
+            print("\nTransacao concluida com sucesso!")
+        else:
+            print("\nSenha incorreta!")
+
+def deposita_valor(clientes):
     CNPJ = input("Digite o CNPJ da conta que o valor sera depositado: ")
-    valor = float(input("Digite o valor: "))
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
 
-    print(f"CNPJ: {CNPJ}")
-    print(f"valor: {valor}")
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado")
+    else:
+        cliente = clientes[indice_cliente]    
+
+        valor = float(input("Valor a ser depositado: "))  
+
+        cliente['saldo'] += valor
+        print("\nTransacao concluida com sucesso!")       
 
 def gera_extrato():
     CNPJ = input("Digite o CNPJ da conta: ")
@@ -53,16 +81,40 @@ def gera_extrato():
     print(f"CNPJ: {CNPJ}")
     print(f"senha: {senha}")
 
-def transfere_valor():
+def transfere_valor(clientes):
     CNPJ_origem = input("Digite o CNPJ da conta de origem: ")
-    senha_origem = input("Digite a senha: ")
-    CNPJ_destino = input("Digite o CNPJ da conta de destino: ")
-    senha_destino = input("Digite a senha: ")
+    indice_cliente_origem = retorna_indice_cliente(clientes, CNPJ_origem)
 
-    print(f"CNPJ conta origem: {CNPJ_origem}")
-    print(f"senha conta origem: {senha_origem}")
-    print(f"CNPJ conta destino: {CNPJ_destino}")
-    print(f"senha conta destino: {senha_destino}")
+    if indice_cliente_origem == -1:
+        print("\nCNPJ nao encontrado!")
+    else:
+        cliente_origem = clientes[indice_cliente_origem]
+
+        senha_origem = input("Digite a senha: ")
+
+        if cliente_origem['senha'] == senha_origem:
+            CNPJ_destino = input("Digite o CNPJ da conta de destino: ")
+            indice_cliente_destino = retorna_indice_cliente(clientes, CNPJ_destino)
+
+            if indice_cliente_destino == -1:
+                print("\nCNPJ nao encontrado!")
+            else:
+                cliente_destino = clientes[indice_cliente_destino]
+                valor = float(input("Valor a ser transferido: "))
+            
+                cliente_origem['saldo'] -= valor
+                cliente_destino['saldo'] += valor
+
+                print("\nTransacao concluida com sucesso!")
+        else:
+            print("\nSenha incorreta!")
+
+def retorna_indice_cliente(clientes, cnpj):
+    for cliente in clientes:
+        if cliente['cnpj'] == cnpj:
+            return clientes.index(cliente)
+        
+    return -1
 
 
 clientes = []
@@ -80,13 +132,13 @@ while (True):
     elif (inputUsuario == 3):
         lista_clientes(clientes)
     elif (inputUsuario == 4):
-        debita_valor()
+        debita_valor(clientes)
     elif (inputUsuario == 5):
-        deposita_valor()
+        deposita_valor(clientes)
     elif (inputUsuario == 6):
         gera_extrato()
     elif (inputUsuario == 7):
-        transfere_valor()
+        transfere_valor(clientes)
     elif (inputUsuario == 8):
         print("Operacao livre")
     elif (inputUsuario == 9):
