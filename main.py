@@ -1,21 +1,34 @@
-def cadastra_cliente():
+def cadastra_cliente(clientes):
     razao_social = input("Digite a razao social: ")
     CNPJ = input("Digite o CNPJ: ")
     tipo_conta = input("Digite o tipo de conta: ")
     saldo_inicial = float(input("Digite o saldo inicial: "))
     senha = input("Digite uma senha: ")
 
-    print(f"razao social: {razao_social}")
-    print(f"CNPJ: {CNPJ}")
-    print(f"tipo de conta: {tipo_conta}")
-    print(f"saldo inicial: {saldo_inicial}")
-    print(f"senha: {senha}")
+    cliente = {
+        "razao_social": razao_social,
+        "cnpj": CNPJ,
+        "tipo_conta": tipo_conta,
+        "saldo": saldo_inicial,
+        "senha": senha
+    }
 
-def deleta_cliente():
-    print("Dentro da funcao apagar!\n")
+    clientes.append(cliente)
 
-def lista_clientes():
-    print("Dentro da funcao listar clientes!\n")
+def deleta_cliente(clientes):
+    cnpj_cliente = input("Digite o CNPJ do cliente que sera deletado: ")
+
+    for cliente in clientes:
+        if cliente['cnpj'] == cnpj_cliente:
+            clientes.remove(cliente)
+            print("cliente deletado com sucesso!")
+        
+def lista_clientes(clientes):
+    print("dentro da funcao listar clientes:")
+    for cliente in clientes:
+        print()
+        for chave, valor in cliente.items():
+            print(f"{chave}: {valor}")
 
 def debita_valor():
     CNPJ = input("Digite o CNPJ da conta que tera o valor debitado: ")
@@ -52,18 +65,20 @@ def transfere_valor():
     print(f"senha conta destino: {senha_destino}")
 
 
+clientes = []
 
 while (True):
     print(f"\nMenu principal:\n\n\t1 - Novo cliente\n\t2 - Apaga cliente\n\t3 - Listar clientes\n\t4 - Debito\n\t5 - Deposito\n\t6 - Extrato\n\t7 - Transferencia entre contas\n\t8 - Operacao livre\n\t9 - Sair\n")
 
     inputUsuario = int(input("Opcao desejada: "))
+    print()
 
     if (inputUsuario == 1):
-        cadastra_cliente()
+        cadastra_cliente(clientes)
     elif (inputUsuario == 2):
-        deleta_cliente()
+        deleta_cliente(clientes)
     elif (inputUsuario == 3):
-        lista_clientes()
+        lista_clientes(clientes)
     elif (inputUsuario == 4):
         debita_valor()
     elif (inputUsuario == 5):
