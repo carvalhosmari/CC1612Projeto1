@@ -191,11 +191,18 @@ def registra_transacao(cliente, tipo_op, valor):
 
     cliente["extrato"].append(operacao)
 
+def imprime_menu():
+    print()
+    print("**********************")
+    print("*** QUEM POUPA TEM ***")
+    print("**********************")
+    print(f"\nMenu principal:\n\n\t1 - Novo cliente\n\t2 - Apaga cliente\n\t3 - Listar clientes\n\t4 - Debito\n\t5 - Deposito\n\t6 - Extrato\n\t7 - Transferencia entre contas\n\t8 - Operacao livre\n\t9 - Sair\n")
+
 clientes = []
 
 while (True):
-    print(f"\nMenu principal:\n\n\t1 - Novo cliente\n\t2 - Apaga cliente\n\t3 - Listar clientes\n\t4 - Debito\n\t5 - Deposito\n\t6 - Extrato\n\t7 - Transferencia entre contas\n\t8 - Operacao livre\n\t9 - Sair\n")
-
+    imprime_menu()
+    
     inputUsuario = int(input("Opcao desejada: "))
     print()
 
