@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 
 def cadastra_cliente(clientes):
     razao_social = input("Digite a razao social: ")
@@ -7,6 +8,18 @@ def cadastra_cliente(clientes):
     saldo_inicial = float(input("Digite o saldo inicial: "))
     senha = input("Digite uma senha: ")
     transacoes = []
+    cartoes = []
+
+    cartao = {
+        "titular": razao_social,
+        "tipo": "debito",
+        "numero": uuid.uuid4(),
+        "validade": datetime.now().year + 6,
+        "limite": 0, 
+        "status": "ativo"
+    }
+
+    cartoes.append(cartao)
 
     cliente = {
         "razao_social": razao_social,
@@ -14,7 +27,8 @@ def cadastra_cliente(clientes):
         "tipo_conta": tipo_conta,
         "saldo": saldo_inicial,
         "senha": senha,
-        "extrato": transacoes
+        "extrato": transacoes,
+        "cartoes": cartoes
     }
 
     registra_transacao(cliente, 2, saldo_inicial)
@@ -119,15 +133,15 @@ def transfere_valor(clientes):
     indice_cliente_origem = retorna_indice_cliente(clientes, CNPJ_origem)
     limite = 0
 
-    if cliente_origem['tipo_conta'] == "comum":
-        limite == -1000
-    else:
-        limite == -5000
-
     if indice_cliente_origem == -1:
         print("\nCNPJ nao encontrado!")
     else:
         cliente_origem = clientes[indice_cliente_origem]
+        
+        if cliente_origem['tipo_conta'] == "comum":
+            limite == -1000
+        else:
+            limite == -5000
 
         senha_origem = input("Digite a senha: ")
 
@@ -196,7 +210,78 @@ def imprime_menu():
     print("**********************")
     print("*** QUEM POUPA TEM ***")
     print("**********************")
-    print(f"\nMenu principal:\n\n\t1 - Novo cliente\n\t2 - Apaga cliente\n\t3 - Listar clientes\n\t4 - Debito\n\t5 - Deposito\n\t6 - Extrato\n\t7 - Transferencia entre contas\n\t8 - Operacao livre\n\t9 - Sair\n")
+    print(f"\nMenu principal:\n\n\t1 - Novo cliente\n\t2 - Apaga cliente\n\t3 - Listar clientes\n\t4 - Debito\n\t5 - Deposito\n\t6 - Extrato\n\t7 - Transferencia entre contas\n\t8 - Cartoes\n\t9 - Sair\n")
+
+def imprime_menu_cartao():
+    print(f"Cartoes:\n\t1 - Consultar cartoes por cliente\n\t2 - Emitir novo cartao\n\t3 - Cancelar cartao\n\t4 - Sair\n")
+
+def lista_cartoes(clientes):
+    CNPJ = input("Digite o CNPJ da conta: ")
+
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
+
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado")
+    else:
+        cliente = clientes[indice_cliente]    
+ 
+        print()
+        print(f"titular: {cliente['razao_social']}\nconta: {cliente['tipo_conta']}")     
+        for cartao in cliente["cartoes"]:
+            print(f"\ttipo: {cartao['tipo']}\tlimite: R$ {(cartao['limite']):.2f} \tnumero: {(cartao['numero']).hex}\tvalidade: {cartao['validade']}\tstatus: {cartao['status']}")
+            
+        print()
+        
+def emite_cartao(clientes):
+    CNPJ = input("Digite o CNPJ da conta: ")
+
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
+
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado")
+    else:
+        cliente = clientes[indice_cliente]
+        tipo = int(input("Tipo de cartao:\n\t1 - credito\n\t2 - debito\n\nopcao desejada:"))
+        tipoStr = ""
+        limite = 0
+        
+
+        if tipo == 1:
+            tipoStr = "credito"
+
+            limite = float(input("Limite:"))            
+        else:
+            tipoStr = "debito"
+
+        cartao = {
+        "titular": cliente['razao_social'],
+        "tipo": tipoStr,
+        "numero": uuid.uuid4(),
+        "validade": datetime.now().year + 6,
+        "limite": limite,
+        "status": "ativo"
+        }
+
+        cliente['cartoes'].append(cartao)
+
+        print("\nCartao emitido com sucesso!\n\n")
+
+def cancela_cartao(cliente):
+    CNPJ = input("Digite o CNPJ da conta: ")
+
+    indice_cliente = retorna_indice_cliente(clientes, CNPJ)
+
+    if indice_cliente == -1:
+        print("\nCNPJ nao encontrado")
+    else:
+        cliente = clientes[indice_cliente]
+        numCartao = input("Digite o numero do cartao que sera cancelado:")
+        
+        for cartao in cliente['cartoes']:
+            if cartao['numero'].hex == numCartao:
+                cartao['status'] = "cancelado"
+                print("\nCartao cancelado com sucesso!\n")          
+
 
 clientes = []
 
@@ -221,7 +306,21 @@ while (True):
     elif (inputUsuario == 7):
         transfere_valor(clientes)
     elif (inputUsuario == 8):
-        print("Operacao livre")
+        while (True):
+            imprime_menu_cartao()
+            inputUsuario = int(input("Opcao desejada: "))
+            print()
+
+            if inputUsuario == 1:
+                lista_cartoes(clientes)
+            elif inputUsuario == 2:
+                emite_cartao(clientes)
+            elif inputUsuario == 3:
+                cancela_cartao(clientes)
+            elif inputUsuario == 4:
+                break
+            else:
+                print("opcao invalida")    
     elif (inputUsuario == 9):
         print("Dentro da opcao sair (encerra o programa)\n")
         break
